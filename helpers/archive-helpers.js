@@ -26,12 +26,12 @@ exports.initialize = function(pathsObj){
 // The following function names are provided to you to suggest how you might
 // modularize your code. Keep it clean!
 
-exports.readListOfUrls = function(callback){
+exports.readListOfUrls = function(callback) {
   // navigate to sites.txt
   // use fs to read in file
   // convert to string, then split on \n
   // call callback on each url
-  fs.readFile(exports.paths.list, function(err, data){
+  fs.readFile(exports.paths.list, function(err, data) {
     if (err) { throw err; }
     console.log(data.toString());
     data = data.toString().split('\n');
@@ -42,31 +42,54 @@ exports.readListOfUrls = function(callback){
   });
 };
 
-exports.isUrlInList = function(url, callback){
-  //var found = false;
-  exports.readListOfUrls(function(site){
-    if (site === url){
+exports.isNewUrl = function(url, callback) {
+  fs.readFile(exports.paths.list, function(err, data) {
+    if (err) { throw err; }
+    data = data.toString().split('\n');
+    var newUrl = _.every(data, function(item){
+      return item !== url;
+    });
+    if(!newUrl) {
+      callback(url);
+    } else {
+      exports.addUrlToList(url, function(url){
+        exports.downloadUrls(url);
+      });
+    }
+    // if (bool){
+    //   exports.addUrlToList(url, function(){
+    //     //redirect to loading screen
+    //   });
+    // }
+  });
+};
+
+exports.addUrlToList = function(url, callback) {
+  fs.appendFile(exports.path.list, url+'\n', callback);
+};
+
+
+
+exports.isUrlInList = function(url, callback) {
+
+  exports.readListOfUrls(function(site) {
+    if (site === url) {
+
       callback(site)
-      // callback(true) ?
-      //found = true;
     }
   });
-  // callback(found); //?
+  console.log('TESTING');
 };
 
-exports.addUrlToList = function(url, callback){
-  fs.appendFile(exports.path.list, url+'\n', callback); //anonymous?
+
+exports.isUrlArchived = function(url, callback){
+  fs.exists(path.join(exports.paths.archivedSites, url), function(urlExists){
+    urlExists ? callback(url) : exports.downloadUrls(url); // serve loading page?
+  });
 };
 
-// exports.isUrlArchived = function(url, callback){
-//   fs.exists(path.join(exports.paths.archivedSites, url), function(bool){
-//     //callback(bool);
-//     bool ? callback(url) : //doNothing
-//   });
-// };
-
-exports.downloadUrls = function(url){
-  request('http://'+url, function(error, response, body){
+exports.downloadUrls = function(url) {
+  request('http://'+url, function(error, response, body) {
     console.log(url);
     console.log(path.join(exports.paths.archivedSites, url));
     fs.writeFile(path.join(exports.paths.archivedSites, url), body, function(error){

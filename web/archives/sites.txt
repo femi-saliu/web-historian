@@ -1,4 +1,4 @@
 www.google.com
 www.cnn.com
-www.espn.com
 www.reddit.com
+www.digg.com

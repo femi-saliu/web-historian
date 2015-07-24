@@ -18,8 +18,10 @@ exports.serveAssets = function(res, asset, callback) {
   // asset is path to html file
   // call back is something
   fs.readFile(asset, function(err, data){
-    res.writeHead(200, exports.headers);
+    if (err) { throw err; }
+    res.writeHead(200, headers);
     res.end(data.toString());
+    if (!!callback) callback(data);
   });
 };
 
